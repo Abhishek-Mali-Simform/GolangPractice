@@ -3,7 +3,7 @@
 ## Contents
 * [Bouncing Ball](/Bouncing%20Ball)
 * [File Finder](/File%20Finder)
-* [File IO](/File%20O)
+* [File IO](/File%20IO)
 * [Label Break & Continue](/Label%20Break%20&%20Continue)
 * [Log Parser](/Log%20Parser)
 * [Lucky Number](/Lucky%20Number)
