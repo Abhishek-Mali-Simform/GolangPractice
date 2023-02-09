@@ -8,7 +8,7 @@
 * [Log Parser](/Log%20Parser/main.go)
 * [Lucky Number](/Lucky%20Number/main.go)
 * [Retro LED Clock](/Retro%20Led%20Clock/main.go)
-* [Single User Validation](/Single%20User%20Validation)/main.go
-* [Spam Masker](/Spam%20Masker)/main.go
+* [Single User Validation](/Single%20User%20Validation/main.go)
+* [Spam Masker](/Spam%20Masker/main.go)
 * [Web Application](/webapp/webapp.go)
 * [Word Finder](/Word%20Finder/main.go)
