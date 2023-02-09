@@ -4,7 +4,7 @@
 * [Bouncing Ball](/Bouncing%20Ball)
 * [File Finder](/File%20Finder)
 * [File IO](/File%20IO)
-* [Label Break & Continue](/Label%20Break%20&%20Continue)
+* [Label Break & Continue](/Label%20Break%20and%20Continue)
 * [Log Parser](/Log%20Parser)
 * [Lucky Number](/Lucky%20Number)
 * [Retro LED Clock](/Retro%20LED%20Clock)
