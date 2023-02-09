@@ -6,6 +6,7 @@
 * [File IO](/File%20IO/main.go)
 * [Label Break & Continue](/Label%20Break%20and%20Continue/main.go)
 * [Log Parser](/Log%20Parser/main.go)
+  * [Another Example](/Log%20Parser/Part2/main.go)
 * [Lucky Number](/Lucky%20Number/main.go)
 * [Retro LED Clock](/Retro%20Led%20Clock/main.go)
 * [Single User Validation](/Single%20User%20Validation/main.go)
