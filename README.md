@@ -1,7 +1,7 @@
 # GOLANG PRACTICE
 
 ## Contents
-* [Bouncing Ball](/GolangPractice/tree/master/Bouncing%20Ball)
+* [Bouncing Ball](/Bouncing%20Ball)
 * [File Finder]()
 * [File IO]()
 * [Label Break & Continue]()
