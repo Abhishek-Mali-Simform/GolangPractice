@@ -90,6 +90,7 @@ func main() {
 	router.HandleFunc("/create/person", CreatePerson).Methods("POST")
 	router.HandleFunc("/create/book", CreateBook).Methods("POST")
 	router.HandleFunc("/update/person/{id}", UpdatePerson).Methods("PUT")
+	router.HandleFunc("/update/book/{id}", UpdateBook).Methods("PUT")
 	router.HandleFunc("/delete/person/{id}", DeletePerson).Methods("DELETE")
 	router.HandleFunc("/delete/book/{id}", DeleteBook).Methods("DELETE")
 	log.Fatal(http.ListenAndServe(":8080", router))
@@ -213,6 +214,24 @@ func CreateBook(writer http.ResponseWriter, request *http.Request) {
 		json.NewEncoder(writer).Encode(&book)
 	}
 
+}
+
+func UpdateBook(writer http.ResponseWriter, request *http.Request) {
+	//Get variables from mux
+	params := mux.Vars(request)
+
+	var book, b Book
+
+	//Getting Updated Data
+	json.NewDecoder(request.Body).Decode(&b)
+
+	//Only gets first book with similar query in this case id is unique so no problem
+	db.First(&book, params["id"])
+
+	//Adding Found Data To Books
+	db.Model(&book).Updates(&b)
+
+	json.NewEncoder(writer).Encode(book)
 }
 
 func DeleteBook(writer http.ResponseWriter, request *http.Request) {
