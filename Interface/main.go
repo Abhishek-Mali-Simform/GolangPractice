@@ -17,7 +17,7 @@ func main() {
 	//sort.Sort(byReleaseDate(store))
 	//sort.Sort(sort.Reverse(byReleaseDate(store)))
 	store.discount(.5)
-
+	fmt.Println(store)
 	data, err := json.MarshalIndent(store, "", " ")
 	if err != nil {
 		log.Fatal(err)
