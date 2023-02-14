@@ -36,6 +36,12 @@ var (
 	}
 )
 
+func errorCheck(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 var db *gorm.DB
 var err error
 
@@ -66,14 +72,17 @@ func main() {
 	defer func() {
 		db, err := db.DB()
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
 		}
-		db.Close()
+		err = db.Close()
+		errorCheck(err)
 	}()
 
 	//Make Migrations to the database if they have not already been created
-	db.AutoMigrate(&Person{})
-	db.AutoMigrate(&Book{})
+	err = db.AutoMigrate(&Person{})
+	errorCheck(err)
+	err = db.AutoMigrate(&Book{})
+	errorCheck(err)
 
 	//Inserting Data into Database
 	//db.Create(person)
@@ -109,12 +118,14 @@ func GetPeople(writer http.ResponseWriter, request *http.Request) {
 	db.Find(&people)
 
 	for index := range people {
-		db.Model(&people[index]).Association("Books").Find(&books)
+		err = db.Model(&people[index]).Association("Books").Find(&books)
+		errorCheck(err)
 		people[index].Books = books
 	}
 
 	//response on http
-	json.NewEncoder(writer).Encode(&people)
+	err = json.NewEncoder(writer).Encode(&people)
+	errorCheck(err)
 }
 
 func GetPerson(writer http.ResponseWriter, request *http.Request) {
@@ -128,25 +139,30 @@ func GetPerson(writer http.ResponseWriter, request *http.Request) {
 	db.First(&person, params["id"])
 
 	//Getting all related books
-	db.Model(&person).Association("Books").Find(&books)
+	err = db.Model(&person).Association("Books").Find(&books)
+	errorCheck(err)
 
 	//Adding Found Data To Books
 	person.Books = books
 
-	json.NewEncoder(writer).Encode(person)
+	err = json.NewEncoder(writer).Encode(person)
+	errorCheck(err)
 }
 
 func CreatePerson(writer http.ResponseWriter, request *http.Request) {
 	var person Person
 
-	json.NewDecoder(request.Body).Decode(&person)
+	err = json.NewDecoder(request.Body).Decode(&person)
+	errorCheck(err)
 
 	createdPerson := db.Create(&person)
 	err = createdPerson.Error
 	if err != nil {
-		json.NewEncoder(writer).Encode(err)
+		err = json.NewEncoder(writer).Encode(err)
+		errorCheck(err)
 	} else {
-		json.NewEncoder(writer).Encode(&person)
+		err = json.NewEncoder(writer).Encode(&person)
+		errorCheck(err)
 	}
 
 }
@@ -158,7 +174,8 @@ func UpdatePerson(writer http.ResponseWriter, request *http.Request) {
 	var person, per Person
 
 	//Getting Updated Data
-	json.NewDecoder(request.Body).Decode(&per)
+	err = json.NewDecoder(request.Body).Decode(&per)
+	errorCheck(err)
 
 	//Only gets first person with similar query in this case id is unique so no problem
 	db.First(&person, params["id"])
@@ -166,7 +183,8 @@ func UpdatePerson(writer http.ResponseWriter, request *http.Request) {
 	//Adding Found Data To Books
 	db.Model(&person).Updates(&per)
 
-	json.NewEncoder(writer).Encode(person)
+	err = json.NewEncoder(writer).Encode(person)
+	errorCheck(err)
 }
 
 func DeletePerson(writer http.ResponseWriter, request *http.Request) {
@@ -177,7 +195,8 @@ func DeletePerson(writer http.ResponseWriter, request *http.Request) {
 	db.First(&person, params["id"])
 	db.Delete(&person)
 
-	json.NewEncoder(writer).Encode(&person)
+	err = json.NewEncoder(writer).Encode(&person)
+	errorCheck(err)
 }
 
 // Book Controllers
@@ -188,7 +207,8 @@ func GetBooks(writer http.ResponseWriter, request *http.Request) {
 	db.Find(&books)
 
 	//response on http
-	json.NewEncoder(writer).Encode(&books)
+	err = json.NewEncoder(writer).Encode(&books)
+	errorCheck(err)
 }
 
 func GetBook(writer http.ResponseWriter, request *http.Request) {
@@ -198,20 +218,24 @@ func GetBook(writer http.ResponseWriter, request *http.Request) {
 	db.First(&book, params["id"])
 
 	//response on http
-	json.NewEncoder(writer).Encode(&book)
+	err = json.NewEncoder(writer).Encode(&book)
+	errorCheck(err)
 }
 
 func CreateBook(writer http.ResponseWriter, request *http.Request) {
 	var book Book
 
-	json.NewDecoder(request.Body).Decode(&book)
+	err = json.NewDecoder(request.Body).Decode(&book)
+	errorCheck(err)
 
 	createdBook := db.Create(&book)
 	err = createdBook.Error
 	if err != nil {
-		json.NewEncoder(writer).Encode(err)
+		err = json.NewEncoder(writer).Encode(err)
+		errorCheck(err)
 	} else {
-		json.NewEncoder(writer).Encode(&book)
+		err = json.NewEncoder(writer).Encode(&book)
+		errorCheck(err)
 	}
 
 }
@@ -223,7 +247,8 @@ func UpdateBook(writer http.ResponseWriter, request *http.Request) {
 	var book, b Book
 
 	//Getting Updated Data
-	json.NewDecoder(request.Body).Decode(&b)
+	err = json.NewDecoder(request.Body).Decode(&b)
+	errorCheck(err)
 
 	//Only gets first book with similar query in this case id is unique so no problem
 	db.First(&book, params["id"])
@@ -231,7 +256,8 @@ func UpdateBook(writer http.ResponseWriter, request *http.Request) {
 	//Adding Found Data To Books
 	db.Model(&book).Updates(&b)
 
-	json.NewEncoder(writer).Encode(book)
+	err = json.NewEncoder(writer).Encode(book)
+	errorCheck(err)
 }
 
 func DeleteBook(writer http.ResponseWriter, request *http.Request) {
@@ -242,5 +268,6 @@ func DeleteBook(writer http.ResponseWriter, request *http.Request) {
 	db.First(&book, params["id"])
 	db.Delete(&book)
 
-	json.NewEncoder(writer).Encode(&book)
+	err = json.NewEncoder(writer).Encode(&book)
+	errorCheck(err)
 }
