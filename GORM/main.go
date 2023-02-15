@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -9,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 type Person struct {
@@ -42,7 +44,15 @@ func errorCheck(err error) {
 	}
 }
 
+func dbErrorCheck(err error) {
+	if err != nil {
+		tx.Rollback()
+		log.Fatal(err)
+	}
+}
+
 var db *gorm.DB
+var tx *gorm.DB
 var err error
 
 func main() {
@@ -61,21 +71,30 @@ func main() {
 	db, err = gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dbURI,
 		PreferSimpleProtocol: true,
-	}), &gorm.Config{})
+	}), &gorm.Config{
+		SkipDefaultTransaction: true,
+	})
 	if err != nil {
 		log.Fatal(err)
 	} else {
 		fmt.Println("Successfully Connected to Database...")
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+
+	db = db.Session(&gorm.Session{SkipDefaultTransaction: true})
+	db = db.WithContext(ctx)
+
 	//Close Connection to database when the main function finishes
 	defer func() {
+		cancel()
 		db, err := db.DB()
 		if err != nil {
 			fmt.Println(err)
 		}
 		err = db.Close()
 		errorCheck(err)
+		fmt.Println("Closing Database Connection...")
 	}()
 
 	//Make Migrations to the database if they have not already been created
@@ -112,17 +131,22 @@ func main() {
 func GetPeople(writer http.ResponseWriter, request *http.Request) {
 	var people []Person
 	var books []Book
+	fmt.Println("People")
 
 	//Retrieve people data from DB
 	// SELECT * FROM people
-	db.Find(&people)
+
+	tx = db.Begin()
+	tx.Find(&people)
+	fmt.Println("Hello People")
 
 	for index := range people {
-		err = db.Model(&people[index]).Association("Books").Find(&books)
-		errorCheck(err)
+		err = tx.Model(&people[index]).Association("Books").Find(&books)
+		dbErrorCheck(err)
 		people[index].Books = books
 	}
-
+	tx.Commit()
+	fmt.Println(people)
 	//response on http
 	err = json.NewEncoder(writer).Encode(&people)
 	errorCheck(err)
@@ -135,12 +159,14 @@ func GetPerson(writer http.ResponseWriter, request *http.Request) {
 	var person Person
 	var books []Book
 
+	tx = db.Begin()
 	//Only gets first person with similar query in this case id is unique so no problem
-	db.First(&person, params["id"])
+	tx.First(&person, params["id"])
 
 	//Getting all related books
-	err = db.Model(&person).Association("Books").Find(&books)
-	errorCheck(err)
+	err = tx.Model(&person).Association("Books").Find(&books)
+	dbErrorCheck(err)
+	tx.Commit()
 
 	//Adding Found Data To Books
 	person.Books = books
@@ -155,14 +181,18 @@ func CreatePerson(writer http.ResponseWriter, request *http.Request) {
 	err = json.NewDecoder(request.Body).Decode(&person)
 	errorCheck(err)
 
-	createdPerson := db.Create(&person)
+	tx = db.Begin()
+	createdPerson := tx.Create(&person)
 	err = createdPerson.Error
 	if err != nil {
+		tx.Rollback()
 		err = json.NewEncoder(writer).Encode(err)
 		errorCheck(err)
 	} else {
+		tx.Commit()
 		err = json.NewEncoder(writer).Encode(&person)
 		errorCheck(err)
+
 	}
 
 }
@@ -177,14 +207,17 @@ func UpdatePerson(writer http.ResponseWriter, request *http.Request) {
 	err = json.NewDecoder(request.Body).Decode(&per)
 	errorCheck(err)
 
+	tx = db.Begin()
 	//Only gets first person with similar query in this case id is unique so no problem
-	db.First(&person, params["id"])
+	tx.First(&person, params["id"])
 
 	//Adding Found Data To Books
-	db.Model(&person).Updates(&per)
+	tx.Model(&person).Updates(&per)
+	tx.Commit()
 
 	err = json.NewEncoder(writer).Encode(person)
 	errorCheck(err)
+
 }
 
 func DeletePerson(writer http.ResponseWriter, request *http.Request) {
@@ -192,11 +225,14 @@ func DeletePerson(writer http.ResponseWriter, request *http.Request) {
 
 	var person Person
 
-	db.First(&person, params["id"])
-	db.Delete(&person)
+	tx = db.Begin()
+	tx.First(&person, params["id"])
+	tx.Delete(&person)
+	tx.Commit()
 
 	err = json.NewEncoder(writer).Encode(&person)
 	errorCheck(err)
+
 }
 
 // Book Controllers
@@ -204,7 +240,9 @@ func DeletePerson(writer http.ResponseWriter, request *http.Request) {
 func GetBooks(writer http.ResponseWriter, request *http.Request) {
 	var books []Book
 
-	db.Find(&books)
+	tx = db.Begin()
+	tx.Find(&books)
+	tx.Commit()
 
 	//response on http
 	err = json.NewEncoder(writer).Encode(&books)
@@ -215,7 +253,9 @@ func GetBook(writer http.ResponseWriter, request *http.Request) {
 	params := mux.Vars(request)
 	var book Book
 
-	db.First(&book, params["id"])
+	tx = db.Begin()
+	tx.First(&book, params["id"])
+	tx.Commit()
 
 	//response on http
 	err = json.NewEncoder(writer).Encode(&book)
@@ -228,12 +268,15 @@ func CreateBook(writer http.ResponseWriter, request *http.Request) {
 	err = json.NewDecoder(request.Body).Decode(&book)
 	errorCheck(err)
 
-	createdBook := db.Create(&book)
+	tx = db.Begin()
+	createdBook := tx.Create(&book)
 	err = createdBook.Error
 	if err != nil {
+		tx.Rollback()
 		err = json.NewEncoder(writer).Encode(err)
 		errorCheck(err)
 	} else {
+		tx.Commit()
 		err = json.NewEncoder(writer).Encode(&book)
 		errorCheck(err)
 	}
@@ -250,14 +293,17 @@ func UpdateBook(writer http.ResponseWriter, request *http.Request) {
 	err = json.NewDecoder(request.Body).Decode(&b)
 	errorCheck(err)
 
+	tx = db.Begin()
 	//Only gets first book with similar query in this case id is unique so no problem
-	db.First(&book, params["id"])
+	tx.First(&book, params["id"])
 
 	//Adding Found Data To Books
-	db.Model(&book).Updates(&b)
+	tx.Model(&book).Updates(&b)
+	tx.Commit()
 
 	err = json.NewEncoder(writer).Encode(book)
 	errorCheck(err)
+
 }
 
 func DeleteBook(writer http.ResponseWriter, request *http.Request) {
@@ -265,9 +311,12 @@ func DeleteBook(writer http.ResponseWriter, request *http.Request) {
 
 	var book Book
 
-	db.First(&book, params["id"])
-	db.Delete(&book)
+	tx = db.Begin()
+	tx.First(&book, params["id"])
+	tx.Delete(&book)
+	tx.Commit()
 
 	err = json.NewEncoder(writer).Encode(&book)
 	errorCheck(err)
+
 }
