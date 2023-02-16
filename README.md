@@ -1,6 +1,10 @@
 # GOLANG PRACTICE
 
 ## Contents
+* [BEEGO](/BEEGO)
+  * [Start Beego](/BEEGO/Start%20Beego)
+  * [Basic Example](/BEEGO/Basic%20Example)
+  * [Structure_Basic](/BEEGO/Structure_Basic)
 * [Bouncing Ball](/Bouncing%20Ball/main.go)
 * [File Finder](/File%20Finder)
 * [File IO](/File%20IO)
