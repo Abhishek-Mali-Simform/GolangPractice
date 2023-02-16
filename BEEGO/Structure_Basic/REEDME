@@ -1,0 +1,16 @@
+Inside root folder write
+
+	go install github.com/beego/bee/v2@latest
+	
+To test write 
+	
+	bee
+
+If successful will show commands
+
+To run project can write
+	
+	bee run
+
+Open chrome and write localhost:8080/	
+
