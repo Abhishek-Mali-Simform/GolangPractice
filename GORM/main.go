@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -59,13 +60,17 @@ func main() {
 	//Loading Environment Variables
 	// Check .env File
 	host := os.Getenv("HOST")
-	dbPort := os.Getenv("DBPORRT")
+	dbPort := os.Getenv("DBPORT")
 	user := os.Getenv("USER")
 	dbName := os.Getenv("NAME")
-	password := os.Getenv("PASSWORd")
+	password := os.Getenv("PASSWORD")
+
+	passwordByts := []byte(password)
+	sha256Hasher := sha256.New()
+	sha256Hasher.Write(passwordByts)
 
 	//Database Connection String
-	dbURI := fmt.Sprintf("host=%s user=%s dbname=%s sslmode=disable password=%s port=%s TimeZone=Asia/Shanghai", host, user, dbName, password, dbPort)
+	dbURI := fmt.Sprintf("host=%s user=%s dbname=%s sslmode=disable password=%s port=%s", host, user, dbName, password, dbPort)
 
 	//Opening Connection to database
 	db, err = gorm.Open(postgres.New(postgres.Config{
