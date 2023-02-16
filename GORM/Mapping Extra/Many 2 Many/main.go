@@ -11,13 +11,13 @@ import (
 type Employee struct {
 	gorm.Model
 	Name      string
-	Languages []Language `gorm:"many2many:employee_languages;"`
+	Languages []Language `json:",omitempty" gorm:"many2many:employee_languages;"`
 }
 
 type Language struct {
 	gorm.Model
 	Name      string
-	Employees []Employee `gorm:"many2many:employee_languages;"`
+	Employees []Employee `json:",omitempty" gorm:"many2many:employee_languages;"`
 }
 
 func checkError(err error) {
@@ -76,29 +76,32 @@ func main() {
 	}
 
 	fmt.Println("=======Employee DATA=======")
-	findAll(&emp, "EMP")
+	findAll("EMP")
 	fmt.Println("=======Language DATA=======")
-	findAll(&lang, "LANG")
+	findAll("LANG")
 }
 
-func findAll[T Employee | Language](model *T, name string) {
+func findAll(name string) {
 	switch name {
 	case "EMP":
 		var emps []Employee
-		err := db.Model(&Employee{}).Preload("Languages").Find(&emps).Error
+		err := db.Model(&Employee{}).Preload("Languages", func(db *gorm.DB) *gorm.DB {
+			return db.Omit("Employees")
+		}).Find(&emps).Error
 		fmt.Println(err)
 		jn, err := json.MarshalIndent(emps, " ", "\t")
 		checkError(err)
 		fmt.Println(string(jn))
 	case "LANG":
 		var langs []Language
-		err := db.Model(&Language{}).Preload("Employees").Find(&langs).Error
+		err := db.Model(&Language{}).Preload("Employees", func(db *gorm.DB) *gorm.DB {
+			return db.Omit("Employees")
+		}).Find(&langs).Error
 		fmt.Println(err)
 		jn, err := json.MarshalIndent(langs, " ", "\t")
 		checkError(err)
 		fmt.Println(string(jn))
 	}
-
 }
 
 func check[T Employee | Language](value string, model *T) bool {
