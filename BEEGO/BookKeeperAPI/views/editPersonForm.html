@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add People</title>
+</head>
+<body>
+    <form action="/person/update" method="post">
+        <input type="hidden" value={{.Id}} name ="id"/>
+        {{.Form | renderform}}
+        <input type="Submit"/>
+    </form>
+</body>
+</html>

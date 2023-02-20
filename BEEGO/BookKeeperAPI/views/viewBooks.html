@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>Books Details</h1>
+    <table>
+        <thead>
+            <tr>
+                <td>ID</td>
+                <td>Title</td>
+                <td>Author</td>
+                <td>Call Number</td>
+                <td>Book Keeper Name</td>
+                <td>Edit</td>
+                <td>Delete</td>
+            </tr>
+        </thead>
+        <tbody>
+            {{range $val := .Books}}
+            <tr>
+                <td>{{$val.Id}}</td>
+                <td>{{$val.Title}}</td>
+                <td>{{$val.Author}}</td>
+                <td>{{$val.CallNumber}}</td>
+                <td>{{$val.Person.Name}}</td>
+                <td><a href="/book/edit/{{$val.Id}}">Edit</a></td>
+                <td><a href="/book/delete/{{$val.Id}}">Delete</a></td>
+                {{end}}
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

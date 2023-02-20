@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h1>People Details</h1>
+    <table>
+        <thead>
+            <tr>
+                <td>ID</td>
+                <td>Name</td>
+                <td>Email</td>
+                <td>Edit</td>
+                <td>Delete</td>
+            </tr>
+        </thead>
+        <tbody>
+            {{range $val := .People}}
+            <tr>
+                <td>{{$val.Id}}</td>
+                <td>{{$val.Name}}</td>
+                <td>{{$val.Email}}</td>
+                <td><a href="/person/edit/{{$val.Id}}">Edit</a></td>
+                <td><a href="/person/delete/{{$val.Id}}">Delete</a></td>
+                {{end}}
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
