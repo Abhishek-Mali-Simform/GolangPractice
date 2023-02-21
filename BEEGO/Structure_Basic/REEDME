@@ -8,6 +8,10 @@ To test write
 
 If successful will show commands
 
+To Create New Project
+	
+	bee new projectName
+
 To run project can write
 	
 	bee run
