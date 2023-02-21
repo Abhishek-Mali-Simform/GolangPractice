@@ -11,6 +11,10 @@ If successful will show commands
 To Create New Project
 	
 	bee new projectName
+	
+Do mod tidy to download or upgrade dependencies
+
+	go mod tidy
 
 To run project can write
 	
