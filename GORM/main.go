@@ -165,7 +165,8 @@ func GetPerson(writer http.ResponseWriter, request *http.Request) {
 	var books []Book
 
 	tx = db.Begin()
-	//Only gets first person with similar query in this case id is unique so no problem
+	//
+
 	tx.First(&person, params["id"])
 
 	//Getting all related books
